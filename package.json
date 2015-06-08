@@ -1,0 +1,21 @@
+{
+  "name": "FluxWor",
+  "version": "0.1.0",
+  "description": "Web of Things",
+  "author": "Justin Pradier <chromecide@chromecide.com>",
+  "keywords": [
+    "chromecide",
+    "Web of Things",
+    "WoT"
+  ],
+  "main": "index.js",
+  "dependencies": {
+    "jsonld": "~0.3.22",
+    "connect": "~3.3.5",
+    "compression": "~1.4.4",
+    "formidable": "~1.0.17",
+    "qs": "~3.1.0",
+    "cors": "~2.7.1",
+    "ws": "~0.7.2"
+  }
+}

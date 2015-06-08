@@ -1,0 +1,175 @@
+<html>
+    <head>
+        <LINK rel="stylesheet" href="http://code.jquery.com/ui/1.11.4/themes/humanity/jquery-ui.css"/>
+        <style>
+            body{
+                margin:0 0;
+                padding: 0 0;
+            }
+
+            div.nav{
+                display: block;
+                height: 50px;
+                width:100%;
+            }
+
+            div.nav h1{
+                margin: 0 0;
+                padding: 0 0;
+                padding-left: 0.5em;
+                color: #fff;
+                float: left;
+            }
+
+            div.nav button{
+                margin:0.2em;
+                float:right;
+            }
+
+
+            label, input { display:block; }
+    input.text { margin-bottom:12px; width:95%; padding: .4em; }
+    fieldset { padding:0; border:0; margin-top:25px; }
+
+        </style>
+        <script language="javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+        <script language="javascript" src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+    </head>
+    <body>
+        <div class="ui-widget ui-widget-header nav">
+            <div class="ui-widget-header">
+                <h1>FluxWoT Hub</h1>
+            </div>
+            <button id="btnFluxWoTConnect">Connect</button>
+        </div>
+
+        <script language="javascript">
+            $('button').button();
+            $("#btnFluxWoTConnect").click(function(){
+                showConnectForm();
+            });
+            try{
+                var ws = new WebSocket('ws://127.0.0.1:8081/');
+                
+                ws.onopen = function(){
+                    var message = {
+                        uri: "/",
+                        method:"GET",
+                        payload:{}
+                    }
+
+                    ws.send(JSON.stringify(message));
+                };
+
+                ws.onmessage = function(msg){
+                    console.log(message);
+                    var message = JSON.parse(msg.data);
+                    
+                    switch(message.status){
+                        case 200:
+                            /*var newWSThing = new Thing(message.payload);
+                            newWSThing.runAction = function(actionName, data){
+                                var actionMessage = {
+                                    uri: this.id+"/actions/"+actionName,
+                                    method: "POST",
+                                    payload: data
+                                };
+
+                            }*/
+                            console.log(message.payload);
+                            break;
+                    }
+                }
+            }catch(e){
+                console.log(e);
+            }
+
+            function showConnectForm(){
+                $('#FluxWoT_ConnectForm').removeClass("ui-helper-hidden");
+            }
+
+            function getThing(type, id, callback){
+                switch(type){
+                    case 'http':
+                        HTTPThing(id, callback)
+                        break;
+                    case 'ws':
+
+                        break;
+                    default:
+                        callback(new Error("Thing Type Not Defined: "+type));
+                }
+            }
+
+            function HTTPThing(id, cb){
+                $.get(id, function(data){
+                    if(data.actions){
+                        for(var actionName in data.actions){
+                            data[actionName] = function(data){
+                                //post the data to the action url
+                            }
+                        }
+                    }
+                    if(cb){
+                        cb(false, data);
+                    }
+                }).fail(function(err){
+                    if(cb){
+                        cb(err);
+                    }
+                });
+            }
+
+            function WSThing(id, cb){
+
+            }
+            var myThing;
+            getThing("http", "http://127.0.0.1:8080/things/OfficeDoor", function(err, thing){
+                if(err){
+                    console.log(err);
+                }else{
+                    myThing = thing;
+                }
+            });
+
+            function Thing(cfg){
+                for(var keyName in cfg){
+                    this[keyName] = cfg[keyName];
+                }
+
+                if(cfg.actions){
+                    for(var actionName in cfg.actions){
+                        this[actionName] = actionFn(actionName);
+                    }
+                }
+
+                this.subscribers = [];
+            }
+
+                Thing.prototype.runAction = function(actionName, data){
+                    throw new Error("RunAction Not Implemented");
+                }
+
+                Thing.prototype.emit = function(eventName, data){
+
+                }
+
+            function actionFn(actionName){
+                return function(data){
+                    this.runAction(actionName, data);
+                }
+            }
+        </script>
+        <form id="FluxWoT_ConnectForm" class="ui-helper-hidden">
+            <fieldset>
+                <label for="hostType">Type</label>
+                <select name="hostType">
+                    <option value="http">HTTP</option>
+                    <option value="ws">Websocket</option>
+                </select>
+                <label for="hostString">Connection String</label>
+                <input type="text" name="hostString"/>
+            </fieldset>
+          </form>
+    </body>
+</html>
